@@ -1,10 +1,6 @@
 name: Build Brunch using Github Actions
 on:
   push:
-    branches:
-      - 'continuous-integration'
-    paths-ignore:
-      - 'README.md'
 concurrency:
   group: environment-${{ github.ref }}
   cancel-in-progress: true
