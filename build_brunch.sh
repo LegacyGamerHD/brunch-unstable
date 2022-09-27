@@ -4,7 +4,7 @@ if [ ! -d /home/runner/work ]; then NTHREADS=$(nproc); else NTHREADS=$(($(nproc)
 
 kernels=$(ls -d ./kernels/* | sed 's#./kernels/##g')
 for kernel in $kernels; do
-	if [ ! -f "./kernels/$kernel/out/arch/x86/boot/bzImage" ]; then echo "The kernel $kernel has to be built first"; exit 1; fi
+	if [ ! -f "./kernels/$kernel/out/arch/x86/boot/bzImage.unsigned" ]; then echo "The kernel $kernel has to be built first"; exit 1; fi
 done
 if ( ! test -z {,} ); then echo "Must be ran with \"sudo bash\""; exit 1; fi
 if [ $(whoami) != "root" ]; then echo "Please run with sudo"; exit 1; fi
@@ -76,9 +76,9 @@ for kernel in $kernels; do
 mkdir -p ./chroot/home/chronos/kernel || { echo "Failed to create directory for kernel $kernel"; exit 1; }
 cp -r ./kernels/"$kernel" ./chroot/tmp/kernel || { echo "Failed to copy source for kernel $kernel"; exit 1; }
 cd ./chroot/tmp/kernel || { echo "Failed to enter source directory for kernel $kernel"; exit 1; }
-kernel_version="$(file ./out/arch/x86/boot/bzImage | cut -d' ' -f9)"
+kernel_version="$(file ./out/arch/x86/boot/bzImage.unsigned | cut -d' ' -f9)"
 [ ! "$kernel_version" == "" ] || { echo "Failed to read version for kernel $kernel"; exit 1; }
-cp ./out/arch/x86/boot/bzImage ../../home/chronos/rootc/kernel-"$kernel" || { echo "Failed to copy the kernel $kernel"; exit 1; }
+cp ./out/arch/x86/boot/bzImage.unsigned ../../home/chronos/rootc/kernel-"$kernel" || { echo "Failed to copy the kernel $kernel"; exit 1; }
 make -j"$NTHREADS" O=out INSTALL_MOD_PATH=../../../home/chronos/kernel modules_install || { echo "Failed to install modules for kernel $kernel"; exit 1; }
 rm ../../home/chronos/kernel/lib/modules/"$kernel_version"/build || { echo "Failed to remove the build directory for kernel $kernel"; exit 1; }
 rm ../../home/chronos/kernel/lib/modules/"$kernel_version"/source || { echo "Failed to remove the source directory for kernel $kernel"; exit 1; }
@@ -332,7 +332,6 @@ cd ./alsa-ucm-conf || { echo "Failed to switch to ucm configuration directory"; 
 tar zcf ../rootc/packages/alsa-ucm-conf.tar.gz * --owner=0 --group=0 || { echo "Failed to create ucm configuration archive"; exit 1; }
 cd .. || { echo "Failed to cleanup ucm configuration directory"; exit 1; }
 rm -r ./alsa-ucm-conf || { echo "Failed to cleanup ucm configuration directory"; exit 1; }
-
 git clone --depth=1 -b main https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git || { echo "Failed to clone the linux firmware git"; exit 1; }
 cd ./linux-firmware || { echo "Failed to enter the linux firmware directory"; exit 1; }
 make -j"$NTHREADS" DESTDIR=./tmp FIRMWAREDIR=/lib/firmware install || { echo "Failed to install firmwares in temporary directory"; exit 1; }
