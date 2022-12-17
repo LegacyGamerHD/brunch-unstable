@@ -1,0 +1,11 @@
+--- a/Makefile 2022-12-17 21:02:06.985464154 +0100
++++ b/Makefile 2022-12-17 20:57:49.450020286 +0100
+@@ -515,7 +515,7 @@
+ 		   -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE \
+ 		   -Werror=implicit-function-declaration -Werror=implicit-int \
+ 		   -Werror=return-type -Wno-format-security \
+-		   -std=gnu89
++		   -std=gnu11
+ KBUILD_CPPFLAGS := -D__KERNEL__
+ KBUILD_AFLAGS_KERNEL :=
+ KBUILD_CFLAGS_KERNEL :=

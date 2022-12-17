@@ -3,7 +3,8 @@
 if [ ! -d /home/runner/work ]; then NTHREADS=$(nproc); else NTHREADS=$(($(nproc)*4)); fi
 
 if [ -z "$1" ]; then
-kernels=$(ls -d ./kernels/* | sed 's#./kernels/##g')
+  kernels=('5.15') # TODO: replace with sed
+# kernels=$(ls -d ./kernels/* | sed 's#./kernels/##g')
 else
 kernels="$1"
 fi

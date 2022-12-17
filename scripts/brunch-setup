@@ -18,7 +18,7 @@ function singleselect {
         read -rsn2 key
         if [[ $key = [A ]]; then echo up;    fi;
         if [[ $key = [B ]]; then echo down;  fi;
-      fi 
+      fi
     }
 
     local options
@@ -67,7 +67,7 @@ function singleselect {
     cursor_to $lastrow
     printf "\n"
     cursor_blink_on
-    
+
     returned_values=${options[$active]}
 }
 
@@ -89,7 +89,7 @@ function multiselect {
         read -rsn2 key
         if [[ $key = [A ]]; then echo up;    fi;
         if [[ $key = [B ]]; then echo down;  fi;
-      fi 
+      fi
     }
     toggle_option()    {
       local arr_name=$1
@@ -154,7 +154,7 @@ function multiselect {
     cursor_to $lastrow
     printf "\n"
     cursor_blink_on
-    
+
     num=0
     test=""
         for option in "${options[@]}"; do
@@ -181,7 +181,7 @@ reset
 
 returned_values=""
 
-available_kernels="5.15;5.10;5.4;4.19;macbook;chromebook-5.4;chromebook-4.14;chromebook-4.4"
+available_kernels="5.15"
 echo "Select your kernel (press ENTER to validate your choice)"
 singleselect "$available_kernels"
 selected_kernel="$returned_values"
@@ -190,31 +190,8 @@ reset
 
 case "$selected_kernel" in
 	5.15)
-options_page1="enable_updates;pwa;android_init_fix;android_init_fix2;mount_internal_drives;disable_sdcard_storage;disable_usb_storage;chromebook_audio;native_chromebook_image;broadcom_wl;rtl8188eu;rtl8188fu;rtl8192eu;rtl8723bs;rtl8723bu;rtl8723du;rtl8812au;rtl8814au;rtl8821ce;rtl8821cu;rtl88x2bu;rtl8852ae;rtbth"
-options_page2="ipts_touchscreen;ithc_touchscreen;no_camera_config;invert_camera_order;acpi_power_button;alt_touchpad_config;alt_touchpad_config2;alt_touchpad_config3;touchpad_resume_fix;internal_mic_fix;internal_mic_fix2;sysfs_tablet_mode;force_tablet_mode;suspend_s3;advanced_als"
-	;;
-	5.10)
-options_page1="enable_updates;pwa;android_init_fix;android_init_fix2;mount_internal_drives;disable_sdcard_storage;disable_usb_storage;chromebook_audio;native_chromebook_image;broadcom_wl;iwlwifi_backport;rtl8188eu;rtl8188fu;rtl8192eu;rtl8723bs;rtl8723bu;rtl8723de;rtl8723du;rtl8812au;rtl8814au;rtl8821ce;rtl8821cu;rtl88x2bu;rtl8852ae;rtbth"
-options_page2="ipts_touchscreen;ithc_touchscreen;goodix;no_camera_config;invert_camera_order;acpi_power_button;alt_touchpad_config;alt_touchpad_config2;alt_touchpad_config3;touchpad_resume_fix;internal_mic_fix;internal_mic_fix2;sysfs_tablet_mode;force_tablet_mode;suspend_s3;advanced_als"
-	;;
-	5.4)
-options_page1="enable_updates;pwa;android_init_fix;android_init_fix2;mount_internal_drives;disable_sdcard_storage;disable_usb_storage;chromebook_audio;native_chromebook_image;broadcom_wl;iwlwifi_backport;rtl8188eu;rtl8188fu;rtl8192eu;rtl8723bu;rtl8723de;rtl8723du;rtl8812au;rtl8814au;rtl8821ce;rtl8821cu;rtl88x2bu;rtl8852ae;rtbth"
-options_page2="ipts_touchscreen;goodix;no_camera_config;invert_camera_order;acpi_power_button;alt_touchpad_config;alt_touchpad_config2;alt_touchpad_config3;touchpad_resume_fix;internal_mic_fix;internal_mic_fix2;sysfs_tablet_mode;force_tablet_mode;suspend_s3;advanced_als"
-	;;
-	4.19) options_page1="enable_updates;pwa;android_init_fix;android_init_fix2;mount_internal_drives;disable_sdcard_storage;disable_usb_storage;chromebook_audio;native_chromebook_image;broadcom_wl;iwlwifi_backport;rtl8188eu;rtl8188fu;rtl8192eu;rtl8723bu;rtl8723de;rtl8723du;rtl8812au;rtl8814au;rtl8821ce;rtl8821cu;rtl88x2bu;rtbth"
-options_page2="goodix;no_camera_config;invert_camera_order;acpi_power_button;alt_touchpad_config;alt_touchpad_config2;alt_touchpad_config3;touchpad_resume_fix;internal_mic_fix;internal_mic_fix2;sysfs_tablet_mode;force_tablet_mode;suspend_s3;advanced_als"
-	;;
-	macbook)
-options_page1="enable_updates;pwa;android_init_fix;android_init_fix2;mount_internal_drives;disable_sdcard_storage;disable_usb_storage;chromebook_audio;native_chromebook_image;no_camera_config;invert_camera_order;acpi_power_button;alt_touchpad_config;alt_touchpad_config2;alt_touchpad_config3;touchpad_resume_fix;internal_mic_fix;internal_mic_fix2;sysfs_tablet_mode;force_tablet_mode;suspend_s3;advanced_als"
-	;;
-	chromebook-5.4)
-options_page1="enable_updates;pwa;android_init_fix;android_init_fix2;mount_internal_drives;disable_sdcard_storage;disable_usb_storage;chromebook_audio;native_chromebook_image;no_camera_config;invert_camera_order;acpi_power_button;alt_touchpad_config;alt_touchpad_config2;alt_touchpad_config3;touchpad_resume_fix;internal_mic_fix;internal_mic_fix2;sysfs_tablet_mode;force_tablet_mode;suspend_s3;advanced_als"
-	;;
-	chromebook-4.14)
-options_page1="enable_updates;pwa;android_init_fix;android_init_fix2;mount_internal_drives;disable_sdcard_storage;disable_usb_storage;chromebook_audio;native_chromebook_image;no_camera_config;invert_camera_order;acpi_power_button;alt_touchpad_config;alt_touchpad_config2;alt_touchpad_config3;touchpad_resume_fix;internal_mic_fix;internal_mic_fix2;sysfs_tablet_mode;force_tablet_mode;suspend_s3;advanced_als"
-	;;
-	chromebook-4.4)
-options_page1="enable_updates;pwa;android_init_fix;android_init_fix2;mount_internal_drives;disable_sdcard_storage;disable_usb_storage;chromebook_audio;native_chromebook_image;no_camera_config;invert_camera_order;acpi_power_button;alt_touchpad_config;alt_touchpad_config2;alt_touchpad_config3;touchpad_resume_fix;internal_mic_fix;internal_mic_fix2;sysfs_tablet_mode;force_tablet_mode;suspend_s3;advanced_als"
+options_page1="enable_updates;pwa;mount_internal_drives;disable_sdcard_storage;disable_usb_storage"
+options_page2="no_camera_config;sysfs_tablet_mode;force_tablet_mode;suspend_s3;advanced_als"
 	;;
 esac
 
@@ -238,7 +215,7 @@ reset
 
 fi
 
-available_cmdline_params="enforce_hyperthreading=1;snd-intel-dspcfg.dsp_driver=1;i915.enable_fbc=0 i915.enable_psr=0;psmouse.elantech_smbus=1;psmouse.synaptics_intertouch=1"
+available_cmdline_params="enforce_hyperthreading=1;psmouse.synaptics_intertouch=1"
 echo "Select your kernel commandline parameters (press SPACE to select an item and ENTER to validate your choice)"
 multiselect "$available_cmdline_params" " "
 selected_cmdline_params="$returned_values"

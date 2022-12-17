@@ -95,31 +95,28 @@ rm -rf ./fbv || { echo "Failed to make fbv"; exit 1; }
 
 git clone https://github.com/linux-surface/iptsd.git iptsd || { echo "Failed to make iptsd"; exit 1; }
 cd iptsd || { echo "Failed to make iptsd"; exit 1; }
-git checkout 0aa62f3e4d7f3b2da4a3c726e0d7a0a9a89fa3fa || { echo "Failed to make iptsd"; exit 1; }
 #sed -i "/'-ffast-math',/d" ./src/meson.build
-meson --prefix="/usr" -Dservice_manager="" -Ddebug_tools="" -Dsample_config=false build/ || { echo "Failed to make iptsd"; exit 1; }
+LDFLAGS=-static meson --prefix="/usr" -Dservice_manager="" -Ddebug_tools="" -Dsample_config=false build/ || { echo "Failed to make iptsd"; exit 1; }
 DESTDIR=/home/chronos/ipts-pkg ninja -j"$NTHREADS" -C build/ install || { echo "Failed to make iptsd"; exit 1; }
 cd .. || { echo "Failed to make iptsd"; exit 1; }
 rm -rf ./iptsd || { echo "Failed to make iptsd"; exit 1; }
 cd ./ipts-pkg || { echo "Failed to make iptsd"; exit 1; }
 mkdir -p ./usr/lib64 || { echo "Failed to make iptsd"; exit 1; }
 cp /usr/local/lib64/libstdc++.so.6 ./usr/lib64/ || { echo "Failed to make iptsd"; exit 1; }
-tar zcvf ../rootc/packages/ipts.tar.gz * --owner=0 --group=0 || { echo "Failed to make iptsd"; exit 1; }
+mkdir -p ./etc/init || { echo "Failed to make iptsd package"; exit 1; }
+cat >./etc/init/ipts.conf <<IPTS
+start on stopped udev-trigger
+
+pre-start script
+	insmod /lib/modules/$(cat /proc/version |  cut -d' ' -f3)/ipts.ko
+	insmod /lib/modules/$(cat /proc/version |  cut -d' ' -f3)/ithc.ko
+end script
+
+exec iptsd $(iptsd-find-hidraw)
+IPTS
+tar zcvf ../rootc/packages/iptsd.tar.gz * --owner=0 --group=0 || { echo "Failed to make iptsd"; exit 1; }
 cd .. || { echo "Failed to make iptsd"; exit 1; }
 rm -rf ./ipts-pkg || { echo "Failed to make iptsd"; exit 1; }
-
-git clone --depth=1 -b libqzed https://github.com/quo/iptsd.git ithcd || { echo "Failed to make ithcd"; exit 1; }
-cd ithcd || { echo "Failed to make ithcd"; exit 1; }
-meson --prefix="/usr" -Dservice_manager="" -Dsample_config=false build/ || { echo "Failed to make ithcd"; exit 1; }
-DESTDIR=/home/chronos/ithc-pkg ninja -j"$NTHREADS" -C build/ install || { echo "Failed to make ithcd"; exit 1; }
-cd .. || { echo "Failed to make ithcd"; exit 1; }
-rm -rf ./ithcd || { echo "Failed to make ithcd"; exit 1; }
-cd ./ithc-pkg || { echo "Failed to make ithcd"; exit 1; }
-mkdir -p ./usr/lib64 || { echo "Failed to make ithcd"; exit 1; }
-cp /usr/local/lib64/libstdc++.so.6 ./usr/lib64/ || { echo "Failed to make ithcd"; exit 1; }
-tar zcvf ../rootc/packages/ithc.tar.gz * --owner=0 --group=0 || { echo "Failed to make ithcd"; exit 1; }
-cd .. || { echo "Failed to make ithcd"; exit 1; }
-rm -rf ./ithc-pkg || { echo "Failed to make ithcd"; exit 1; }
 
 git clone --depth=1 -b v1.9.18 https://github.com/jirka-h/haveged.git || { echo "Failed to make haveged"; exit 1; }
 cd haveged || { echo "Failed to make haveged"; exit 1; }

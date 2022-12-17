@@ -2,7 +2,7 @@
 
 apply_patches()
 {
-for patch_type in "base" "others" "chromeos" "all_devices" "surface_devices" "surface_go_devices" "surface_mwifiex_pcie_devices" "surface_np3_devices"; do
+for patch_type in "base" "others" "chromeos" "all_devices" "surface_linux" "surface_devices" "surface_go_devices" "surface_mwifiex_pcie_devices" "surface_np3_devices"; do
 	if [ -d "./kernel-patches/$1/$patch_type" ]; then
 		for patch in ./kernel-patches/"$1/$patch_type"/*.patch; do
 			echo "Applying patch: $patch"
@@ -10,12 +10,15 @@ for patch_type in "base" "others" "chromeos" "all_devices" "surface_devices" "su
 		done
 	fi
 done
+
+echo "Adding ipts"
+cp -r ./external-drivers/ipts/src "./kernels/$1/drivers/hid/ipts"
 }
 
 make_config()
 {
 sed -i -z 's@# Detect buggy gcc and clang, fixed in gcc-11 clang-14.\n\tdef_bool@# Detect buggy gcc and clang, fixed in gcc-11 clang-14.\n\tdef_bool $(success,echo 0)\n\t#def_bool@g' ./kernels/$1/init/Kconfig
-if [ "x$1" == "x5.15" ] || [ "x$1" == "x5.10" ] || [ "x$1" == "x5.4" ] || [ "x$1" == "xmacbook" ] || [ "x$1" == "xchromebook-5.4" ]; then config_subfolder="/chromeos"; fi 
+if [ "x$1" == "x5.15" ] || [ "x$1" == "x5.10" ] || [ "x$1" == "x5.4" ] || [ "x$1" == "xmacbook" ] || [ "x$1" == "xchromebook-5.4" ]; then config_subfolder="/chromeos"; fi
 case "$1" in
 	5.15|5.10|5.4|4.19|macbook)
 		make -C "./kernels/$1" O=out allmodconfig || { echo "Kernel configuration failed"; exit 1; }
@@ -48,7 +51,7 @@ kernel_remote_path="$(git ls-remote https://chromium.googlesource.com/chromiumos
 echo "kernel_remote_path=$kernel_remote_path"
 
 # Download kernels source
-kernels="4.4 4.14 4.19 5.4 5.10 5.15"
+kernels="5.15"
 for kernel in $kernels; do
 	kernel_version=$(curl -Ls "https://chromium.googlesource.com/chromiumos/third_party/kernel/+/$kernel_remote_path$kernel/Makefile?format=TEXT" | base64 --decode | sed -n -e 1,4p | sed -e '/^#/d' | cut -d'=' -f 2 | sed -z 's#\n##g' | sed 's#^ *##g' | sed 's# #.#g')
 	echo "kernel_version=$kernel_version"
@@ -56,57 +59,15 @@ for kernel in $kernels; do
 	case "$kernel" in
 		5.15)
 			echo "Downloading ChromiumOS kernel source for kernel $kernel version $kernel_version"
-			curl -L "https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz" -o "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
-			mkdir "./kernels/5.15"
+			test -f "./kernels/chromiumos-$kernel.tar.gz" || curl -L "https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz" -o "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
+			rm -rf "./kernels/5.15"
+      mkdir "./kernels/5.15"
 			tar -C "./kernels/5.15" -zxf "./kernels/chromiumos-$kernel.tar.gz" chromeos || { echo "Kernel source extraction failed"; exit 1; }
-			rm -f "./kernels/chromiumos-$kernel.tar.gz"
 			echo "Downloading Mainline kernel source for kernel $kernel version $kernel_version"
-			curl -L "https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-$kernel_version.tar.gz" -o "./kernels/mainline-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
+			test -f "./kernels/mainline-$kernel.tar.gz" || curl -L "https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-$kernel_version.tar.gz" -o "./kernels/mainline-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
 			tar -C "./kernels/5.15" -zxf "./kernels/mainline-$kernel.tar.gz" --strip 1 || { echo "Kernel source extraction failed"; exit 1; }
-			rm -f "./kernels/mainline-$kernel.tar.gz"
 			apply_patches "5.15"
 			make_config "5.15"
-		;;
-		5.10)
-			echo "Downloading ChromiumOS kernel source for kernel $kernel version $kernel_version"
-			curl -L "https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz" -o "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
-			mkdir "./kernels/macbook" "./kernels/5.10"
-			tar -C "./kernels/macbook" -zxf "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source extraction failed"; exit 1; }
-			tar -C "./kernels/5.10" -zxf "./kernels/chromiumos-$kernel.tar.gz" chromeos || { echo "Kernel source extraction failed"; exit 1; }
-			rm -f "./kernels/chromiumos-$kernel.tar.gz"
-			apply_patches "macbook"
-			make_config "macbook"
-			echo "Downloading Mainline kernel source for kernel $kernel version $kernel_version"
-			curl -L "https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-$kernel_version.tar.gz" -o "./kernels/mainline-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
-			tar -C "./kernels/5.10" -zxf "./kernels/mainline-$kernel.tar.gz" --strip 1 || { echo "Kernel source extraction failed"; exit 1; }
-			rm -f "./kernels/mainline-$kernel.tar.gz"
-			apply_patches "5.10"
-			make_config "5.10"
-		;;
-		5.4)
-			echo "Downloading ChromiumOS kernel source for kernel $kernel version $kernel_version"
-			curl -L "https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz" -o "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
-			mkdir "./kernels/chromebook-5.4" "./kernels/5.4"
-			tar -C "./kernels/chromebook-5.4" -zxf "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source extraction failed"; exit 1; }
-			tar -C "./kernels/5.4" -zxf "./kernels/chromiumos-$kernel.tar.gz" chromeos || { echo "Kernel source extraction failed"; exit 1; }
-			rm -f "./kernels/chromiumos-$kernel.tar.gz"
-			apply_patches "chromebook-5.4"
-			make_config "chromebook-5.4"
-			echo "Downloading Mainline kernel source for kernel $kernel version $kernel_version"
-			curl -L "https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-$kernel_version.tar.gz" -o "./kernels/mainline-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
-			tar -C "./kernels/5.4" -zxf "./kernels/mainline-$kernel.tar.gz" --strip 1 || { echo "Kernel source extraction failed"; exit 1; }
-			rm -f "./kernels/mainline-$kernel.tar.gz"
-			apply_patches "5.4"
-			make_config "5.4"
-		;;
-		4.19)
-			echo "Downloading ChromiumOS kernel source for kernel $kernel version $kernel_version"
-			curl -L "https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz" -o "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
-			mkdir "./kernels/4.19"
-			tar -C "./kernels/4.19" -zxf "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source extraction failed"; exit 1; }
-			rm -f "./kernels/chromiumos-$kernel.tar.gz"
-			apply_patches "4.19"
-			make_config "4.19"
 		;;
 		*)
 			echo "Downloading ChromiumOS kernel source for kernel $kernel version $kernel_version"
@@ -121,8 +82,7 @@ for kernel in $kernels; do
 done
 }
 
-rm -rf ./kernels
-mkdir ./kernels
+mkdir -p ./kernels
 
 chromeos_version="R110"
 download_and_patch_kernels

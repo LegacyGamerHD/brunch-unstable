@@ -1,0 +1,9 @@
+[submodule "linux-surface"]
+	path = linux-surface
+	url = https://github.com/linux-surface/linux-surface
+[submodule "external-drivers/ipts"]
+	path = external-drivers/ipts
+	url = https://github.com/linux-surface/intel-precise-touch
+[submodule "external-drivers/ithc"]
+	path = external-drivers/ithc
+	url = https://github.com/quo/ithc-linux
