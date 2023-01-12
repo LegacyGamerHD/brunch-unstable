@@ -1,8 +1,6 @@
 name: Build Brunch using Github Actions
 on:
   push:
-    branches:
-      - 'continuous-integration'
 concurrency:
   group: environment-${{ github.ref }}
   cancel-in-progress: true
